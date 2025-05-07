@@ -23,6 +23,7 @@ export default class Plugin {
     // 解析json
     const $ = cheerio.load(result.data);
     const arr: Array<any> = [];
+    //@ts-ignore
     $("tr").each((i, el) => {
       const no = $(el).find(".number").text(); //车次
 
@@ -46,6 +47,7 @@ export default class Plugin {
         let tickets: Array<any> = [];
         tickets = tickets.concat(
           num_ticket
+            //@ts-ignore
             .map((i, el) => {
               return {
                 text: $(el).text(),
@@ -57,6 +59,7 @@ export default class Plugin {
 
         tickets = tickets.concat(
           yes_ticket
+            //@ts-ignore
             .map((i, el) => {
               return {
                 text: $(el).text(),
@@ -154,6 +157,7 @@ export default class Plugin {
             const yes_ticket = $(el).find(".yes"); //  一等座 二等座 软卧 硬卧 硬座 无座
             tickets = tickets.concat(
               num_ticket
+                //@ts-ignore
                 .map((i, el) => {
                   return {
                     text: $(el).text(),
@@ -164,6 +168,7 @@ export default class Plugin {
             );
             tickets = tickets.concat(
               yes_ticket
+                //@ts-ignore
                 .map((i, el) => {
                   return {
                     text: $(el).text(),
