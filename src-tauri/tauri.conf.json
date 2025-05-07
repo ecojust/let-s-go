@@ -14,9 +14,9 @@
       {
         "title": "  ",
         "transparent": true,
-        "width": 900,
+        "width": 1300,
         "height": 600,
-        "minWidth": 900,
+        "minWidth": 1300,
         "minHeight": 600,
         "devtools": true
       }

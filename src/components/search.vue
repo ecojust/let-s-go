@@ -45,18 +45,19 @@
 
     <div class="search-result" v-if="trainList.length">
       <el-table
+        border
         :data="trainList"
         style="width: 100%"
-        height="calc(100vh - 100px)"
+        height="calc(100vh - 130px)"
       >
         <el-table-column
           prop="trainNo"
           label="车次"
-          width="120"
+          width="80"
           align="center"
         ></el-table-column>
 
-        <el-table-column align="center" prop="from" label="站点" width="200">
+        <el-table-column align="center" prop="from" label="站点" width="250">
           <template #default="scope">
             <el-tag>
               {{ scope.row.from }}
@@ -73,19 +74,19 @@
           prop="departureTime"
           label="出发时间"
           align="center"
-          width="120"
+          width="100"
         ></el-table-column>
         <el-table-column
           prop="arrivalTime"
           label="到达时间"
           align="center"
-          width="120"
+          width="100"
         ></el-table-column>
         <el-table-column
           prop="duration"
           label="历时"
           align="center"
-          width="120"
+          width="100"
         ></el-table-column>
         <el-table-column label="票务信息">
           <template #default="scope">
@@ -233,6 +234,10 @@ onMounted(async () => {
 
   .search-form {
     text-align: center;
+    background: linear-gradient(to right, #f8f9fa, #e9ecef);
+    border-radius: 8px;
+    padding: 20px 0;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
 
     .inline-form {
       display: inline-flex;
@@ -248,6 +253,9 @@ onMounted(async () => {
 
   .search-result {
     margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
   }
 
   .ticket-tag {
