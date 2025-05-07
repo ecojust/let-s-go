@@ -3,37 +3,28 @@
     <div class="search-form">
       <el-form :model="form" label-width="80px" class="inline-form">
         <el-form-item label="始发站">
-          <el-input placeholder="请输入始发站" v-model="form.from"></el-input>
-          <!-- <el-select
+          <!-- <el-input placeholder="请输入始发站" v-model="form.from"></el-input> -->
+          <el-select-v2
+            :options="fixstation"
             v-model="form.from"
             filterable
-            placeholder="请选择始发站"
+            placeholder="请选择终点站"
             style="width: 120px"
+            :height="300"
           >
-            <el-option
-              v-for="item in stations"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select> -->
+          </el-select-v2>
         </el-form-item>
         <el-form-item label="终点站">
-          <el-input placeholder="请输入终点站" v-model="form.to"></el-input>
-
-          <!-- <el-select
+          <!-- <el-input placeholder="请输入终点站" v-model="form.to"></el-input> -->
+          <el-select-v2
+            :options="fixstation"
             v-model="form.to"
             filterable
             placeholder="请选择终点站"
             style="width: 120px"
+            :height="300"
           >
-            <el-option
-              v-for="item in stations"
-              :key="item.value"
-              :label="item.label"
-              :value="item.value"
-            />
-          </el-select> -->
+          </el-select-v2>
         </el-form-item>
         <el-form-item label="出发日期">
           <el-date-picker
@@ -110,9 +101,14 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="操作">
+        <el-table-column label="操作" width="240" align="center">
           <template #default="scope">
             <el-button
+              :disabled="
+                !scope.row.raw_data.train_no ||
+                !scope.row.raw_data.from_station_telecode ||
+                !scope.row.raw_data.to_station_telecode
+              "
               type="primary"
               size="small"
               @click="handleSearchTicket(scope.row)"
@@ -147,7 +143,20 @@
           >
             <el-card>
               <h4>{{ station.start_station_name || station.station_name }}</h4>
-              <p v-if="index !== 0">正在查询余票...</p>
+
+              <div class="message">
+                {{ tickets[station.station_name]?.message }}
+              </div>
+              <el-tag
+                v-for="(ticket, index) in tickets[station.station_name]
+                  ?.tickets"
+                :key="index"
+                size="small"
+                class="ticket-tag"
+                :type="ticket.text === '有' ? 'success' : 'info'"
+              >
+                {{ ticket.label }}
+              </el-tag>
             </el-card>
           </el-timeline-item>
         </el-timeline>
@@ -160,18 +169,21 @@
 import { Right } from "@element-plus/icons-vue";
 import { onMounted, ref, reactive } from "vue";
 import Plugin from "../tool/plugin";
-
+import STATIONS from "../const/station_name";
 const bShowTimeLine = ref(false);
 
 const form = reactive({
-  from: "上海,SHH",
-  to: "安庆,AQH",
-  date: "2025-05-09",
+  from: "NJH",
+  to: "SHH",
+  date: new Date().toISOString().split("T")[0],
 });
 
 const trainList = ref([]);
 const stations = ref([]);
 const currentTrain = ref({});
+const fixstation = ref(STATIONS);
+
+const tickets = ref({});
 
 const handleSearch = async () => {
   trainList.value = await Plugin.searchTrains(form.from, form.to, form.date);
@@ -179,11 +191,35 @@ const handleSearch = async () => {
 
 const handleSearchTicket = async (train) => {
   //
+  if (
+    !train.raw_data.train_no ||
+    !train.raw_data.from_station_telecode ||
+    !train.raw_data.to_station_telecode
+  ) {
+    return;
+  }
   currentTrain.value = train;
-  stations.value = await Plugin.getStations();
+  stations.value = await Plugin.getStations(
+    train.raw_data.train_no,
+    train.raw_data.from_station_telecode,
+    train.raw_data.to_station_telecode,
+    form.date
+  );
+  tickets.value = {};
   bShowTimeLine.value = true;
 
-  console.log(stations.value);
+  await Plugin.searchTickets(
+    currentTrain.value.trainNo,
+    stations.value,
+    form.from,
+    form.date,
+    (data) => {
+      tickets.value[data.to] = {
+        message: `车次【${data.trainNo}】从${data.from}到${data.to}的余票查询结束`,
+        tickets: data.tickets,
+      };
+    }
+  );
 };
 
 onMounted(async () => {

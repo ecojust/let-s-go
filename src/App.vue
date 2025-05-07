@@ -11,7 +11,7 @@ import Config from "./tool/config";
 import Search from "./components/search.vue";
 
 onMounted(async () => {
-  await Config.applyTheme();
+  Config.applyTheme();
 });
 </script>
 
