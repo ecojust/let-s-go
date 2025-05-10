@@ -20,7 +20,7 @@ export default class Config {
     const res = await File._readFile(
       CONFIG_FILE_NAME,
       JSON.stringify({
-        seat: [],
+        seat: ['二等座'],
         priceRange: {
           min: 0,
           max: 300,
