@@ -1,6 +1,6 @@
-import { SYSTEM_THEMES } from "../const/const";
-
+import { SYSTEM_THEMES, CONFIG_FILE_NAME } from "../const/const";
 import { IThemeItem } from "../const/interface";
+import File from "./file";
 
 export default class Config {
   static async applyTheme() {
@@ -14,5 +14,23 @@ export default class Config {
     if (themeStyle) {
       themeStyle.textContent = content;
     }
+  }
+
+  static async getConfig() {
+    const res = await File._readFile(
+      CONFIG_FILE_NAME,
+      JSON.stringify({
+        seat: [],
+        priceRange: {
+          min: 0,
+          max: 300,
+        },
+      })
+    );
+    return res;
+  }
+
+  static async setConfig(data: any) {
+    await File._writeFile(CONFIG_FILE_NAME, JSON.stringify(data));
   }
 }
