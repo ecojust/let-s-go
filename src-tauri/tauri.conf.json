@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "let_s_go",
+  "productName": "let-s-go",
   "version": "0.1.0",
-  "identifier": "com.let_s_go.app",
+  "identifier": "com.let-s-go.app",
   "build": {
     "beforeDevCommand": "yarn dev",
     "devUrl": "http://localhost:1420",
