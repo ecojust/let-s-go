@@ -109,4 +109,63 @@ export default class Generater {
       return "";
     }
   }
+
+  static generateTimeStyle = (time: string) => {
+    if (!time) return {};
+
+    // 解析时间
+    const [hours, minutes] = time.split(":").map(Number);
+    const totalMinutes = hours * 60 + minutes;
+
+    // 定义时间段及其对应的颜色
+    const timeColors = {
+      dawn: {
+        // 凌晨 (0:00-6:00)
+        background: "linear-gradient(to right, #1a237e, #283593)",
+        color: "#ffffff",
+      },
+      morning: {
+        // 早晨 (6:00-11:00)
+        background: "linear-gradient(to right, #64b5f6, #90caf9)",
+        color: "#000000",
+      },
+      noon: {
+        // 中午 (11:00-13:00)
+        background: "linear-gradient(to right, #4fc3f7, #29b6f6)",
+        color: "#000000",
+      },
+      afternoon: {
+        // 下午 (13:00-17:00)
+        background: "linear-gradient(to right, #81d4fa, #4fc3f7)",
+        color: "#000000",
+      },
+      evening: {
+        // 傍晚 (17:00-19:00)
+        background: "linear-gradient(to right, #ff9800, #f57c00)",
+        color: "#ffffff",
+      },
+      night: {
+        // 晚上 (19:00-24:00)
+        background: "linear-gradient(to right, #1a237e, #0d47a1)",
+        color: "#ffffff",
+      },
+    };
+
+    // 根据时间返回对应的样式
+    if (totalMinutes < 6 * 60)
+      return { ...timeColors.dawn, padding: "4px 8px", borderRadius: "4px" };
+    if (totalMinutes < 11 * 60)
+      return { ...timeColors.morning, padding: "4px 8px", borderRadius: "4px" };
+    if (totalMinutes < 13 * 60)
+      return { ...timeColors.noon, padding: "4px 8px", borderRadius: "4px" };
+    if (totalMinutes < 17 * 60)
+      return {
+        ...timeColors.afternoon,
+        padding: "4px 8px",
+        borderRadius: "4px",
+      };
+    if (totalMinutes < 19 * 60)
+      return { ...timeColors.evening, padding: "4px 8px", borderRadius: "4px" };
+    return { ...timeColors.night, padding: "4px 8px", borderRadius: "4px" };
+  };
 }

@@ -76,20 +76,60 @@
           label="出发时间"
           align="center"
           width="100"
-        ></el-table-column>
+        >
+          <template #default="scope">
+            <span :style="getTimeStyle(scope.row.departureTime)">
+              {{ scope.row.departureTime }}
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="arrivalTime"
           label="到达时间"
           align="center"
           width="100"
-        ></el-table-column>
+        >
+          <template #default="scope">
+            <span :style="getTimeStyle(scope.row.arrivalTime)">
+              {{ scope.row.arrivalTime }}
+            </span>
+          </template>
+        </el-table-column>
         <el-table-column
           prop="duration"
           label="历时"
           align="center"
           width="100"
         ></el-table-column>
-        <el-table-column label="票务信息">
+
+        <el-table-column label="坐席&票价" align="center">
+          <template #default="scope">
+            <!-- <div>bedCode ： {{ scope.row.bedCode }}</div>
+            <div>priceCode ： {{ scope.row.priceCode }}</div> -->
+
+            <div class="seats">
+              <div
+                v-for="(seat, index) in scope.row.seats"
+                :key="index"
+                :class="[
+                  ticketTypes.some((item) => seat.typeCode.includes(item))
+                    ? ''
+                    : 'opacity-05',
+                  'seat-type ticket-tag price-progress-tag',
+                  priceMax == seat.price ? 'is-max' : '',
+                  priceMin == seat.price ? 'is-min' : '',
+                ]"
+                :style="{
+                  '--progress': getPricePosition(seat.price, true) * 100 + '%',
+                }"
+              >
+                {{ seat.typeCode }}:{{ seat.price }}
+              </div>
+            </div>
+          </template>
+        </el-table-column>
+
+        <el-table-column label="余票信息" width="300">
           <template #default="scope">
             <span v-for="(ticket, index) in scope.row.tickets" :key="index">
               <el-tag
@@ -102,15 +142,8 @@
                 size="small"
                 class="ticket-tag"
                 :type="ticket.text === '有' ? 'success' : 'warning'"
-                :style="{
-                  '--progress': getPricePosition(ticket.label) * 100 + '%',
-                }"
               >
                 {{ ticket.label }}
-                <div
-                  class="price-progress"
-                  :style="{ width: getPricePosition(ticket.label) * 100 + '%' }"
-                ></div>
               </el-tag>
             </span>
           </template>
@@ -175,9 +208,6 @@
                   size="small"
                   :class="['ticket-tag', 'price-progress-tag']"
                   :type="ticket.text === '有' ? 'success' : 'info'"
-                  :style="{
-                    '--progress': getPricePosition(ticket.label) * 100 + '%',
-                  }"
                 >
                   {{ ticket.label }}
                 </el-tag>
@@ -246,6 +276,7 @@ import { Right } from "@element-plus/icons-vue";
 import { onMounted, ref, reactive, nextTick } from "vue";
 import Plugin from "../tool/plugin";
 import Config from "../tool/config";
+import Generater from "../tool/generater";
 import STATIONS from "../const/station_name";
 import { ElLoading } from "element-plus";
 
@@ -275,8 +306,18 @@ const fixstation = ref(STATIONS);
 const showResult = ref(true);
 const tickets = ref({});
 
+const getTimeStyle = (time) => {
+  return Generater.generateTimeStyle(time);
+};
+
 // 计算价格在区间中的位置（0-1之间）
-const getPricePosition = (label) => {
+const getPricePosition = (label, isNumber) => {
+  if (isNumber) {
+    const { min, max } = priceRange.value;
+    const range = max - min;
+    if (range <= 0) return 0;
+    return Math.min(Math.max((label - min) / range, 0), 1);
+  }
   // 检查标签是否包含票价信息
   if (!label.includes("票价")) return 0;
 
@@ -322,11 +363,12 @@ const showSettings = () => {
 };
 
 const saveSettings = async () => {
-  const loadingInstance = ElLoading.service({
-    lock: true,
-    text: "保存中...",
-    background: "rgba(0, 0, 0, 0.7)",
-  });
+  // const loadingInstance = ElLoading.service({
+  //   lock: true,
+  //   text: "保存中...",
+  //   background: "rgba(0, 0, 0, 0.7)",
+  // });
+  // nextTick(() => {});
   showResult.value = false;
   showSettingsDialog.value = false;
   const res = await Config.getConfig();
@@ -340,10 +382,13 @@ const saveSettings = async () => {
     await Config.setConfig(data);
   }
   showResult.value = true;
-  nextTick(() => {
-    loadingInstance.close();
-  });
+  // nextTick(() => {
+  //   loadingInstance.close();
+  // });
 };
+
+const priceMax = ref(0);
+const priceMin = ref(0);
 
 const handleSearch = async () => {
   const loadingInstance = ElLoading.service({
@@ -352,9 +397,28 @@ const handleSearch = async () => {
     background: "rgba(0, 0, 0, 0.7)",
   });
   trainList.value = [];
-  trainList.value = await Plugin.searchTrains(form.from, form.to, form.date);
-  nextTick(() => {
+  const list = await Plugin.searchTrains(form.from, form.to, form.date);
+  priceMax.value = Plugin.priceMax;
+  priceMin.value = Plugin.priceMin;
+  priceRange.value.min = priceMin.value;
+  trainList.value = list;
+  nextTick(async () => {
     loadingInstance.close();
+    const res = await Config.getConfig();
+    if (res.success) {
+      const data = JSON.parse(res.data);
+      data.search = {
+        from: form.from,
+        to: form.to,
+      };
+      data.priceRange = data.priceRange || {
+        min: 0,
+        max: 300,
+      };
+      data.priceRange.min = priceMin.value;
+      console.log("priceRange.value", priceRange.value);
+      await Config.setConfig(data);
+    }
   });
 };
 
@@ -398,7 +462,9 @@ onMounted(async () => {
   if (res.success) {
     const data = JSON.parse(res.data);
     ticketTypes.value = data.seat || ["二等座"];
-    priceRange.value = data.priceRange || { min: 0, max: 1000 };
+    priceRange.value = data.priceRange || { min: 0, max: 300 };
+    form.from = data.search?.from || "NJH";
+    form.to = data.search?.to || "SHH";
   }
 });
 </script>
@@ -432,6 +498,32 @@ onMounted(async () => {
     box-shadow: 0 2px 12px rgba(0, 0, 0, 0.05);
     overflow: hidden;
   }
+  .seats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    .seat-type {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-right: 5px;
+      margin-bottom: 5px;
+      border: 1px solid #ccc;
+      cursor: default;
+    }
+    .seat-type.is-max {
+      background: red;
+      color: white;
+      border-color: red;
+    }
+
+    .seat-type.is-min {
+      background: rgb(0, 255, 21);
+      color: white;
+      border-color: rgb(0, 255, 21);
+    }
+  }
 
   .ticket-tag {
     margin-right: 5px;
@@ -453,6 +545,7 @@ onMounted(async () => {
   }
   .opacity-05 {
     opacity: 0.2;
+    display: none !important;
   }
 
   .station-tag {
