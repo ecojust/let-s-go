@@ -179,6 +179,8 @@
           {{ currentTrain.from }}
           <el-icon class="arrow-icon"><Right /></el-icon> {{ currentTrain.to }}
         </div>
+
+        <img class="home-12306" src="../assets/12306.jpg" />
       </div>
 
       <el-scrollbar :wrap-style="{ height: 'calc(100vh - 240px)' }">
@@ -467,6 +469,15 @@ onMounted(async () => {
     form.to = data.search?.to || "SHH";
   }
 });
+
+const open12306App = (train) => {
+  // 12306的scheme协议格式
+  const scheme = `cn.12306://train/trainBooking?from=${form.from}&to=${form.to}&date=${form.date}&trainNo=${train.trainNo}`;
+
+  console.log("scheme", scheme);
+  // 尝试打开应用
+  // window.location.href = scheme;
+};
 </script>
 
 <style lang="less">
@@ -564,6 +575,7 @@ onMounted(async () => {
       justify-content: center;
       align-items: center;
       flex-direction: column;
+      position: relative;
       h1 {
         font-size: 24px;
         margin: 0;
@@ -571,6 +583,17 @@ onMounted(async () => {
       .sub-title {
         font-size: 14px;
         color: #999;
+      }
+      .home-12306 {
+        position: absolute;
+        margin: auto;
+        top: 70px;
+        left: 50%;
+        transform: translateX(-50%);
+        // top: 27px;
+        width: 100px;
+        float: right;
+        z-index: 999;
       }
     }
   }
