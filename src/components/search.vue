@@ -112,7 +112,7 @@
                 v-for="(seat, index) in scope.row.seats"
                 :key="index"
                 :class="[
-                  ticketTypes.some((item) => seat.typeCode.includes(item))
+                  ticketTypes.some((item) => seat.typeCode?.includes(item))
                     ? ''
                     : 'opacity-05',
                   'seat-type ticket-tag price-progress-tag',
@@ -134,7 +134,7 @@
             <span v-for="(ticket, index) in scope.row.tickets" :key="index">
               <el-tag
                 :class="[
-                  ticketTypes.some((item) => ticket.label.includes(item))
+                  ticketTypes.some((item) => ticket.label?.includes(item))
                     ? ''
                     : 'opacity-05',
                   'price-progress-tag',
@@ -205,7 +205,7 @@
               >
                 <el-tag
                   v-show="
-                    ticketTypes.some((item) => ticket.label.includes(item))
+                    ticketTypes.some((item) => ticket.label?.includes(item))
                   "
                   size="small"
                   :class="['ticket-tag', 'price-progress-tag']"
@@ -321,7 +321,7 @@ const getPricePosition = (label, isNumber) => {
     return Math.min(Math.max((label - min) / range, 0), 1);
   }
   // 检查标签是否包含票价信息
-  if (!label.includes("票价")) return 0;
+  if (!label?.includes("票价")) return 0;
 
   // 提取票价数值
   const priceMatch = label.match(/票价([\d.]+)元/);
@@ -340,7 +340,7 @@ const getPricePosition = (label, isNumber) => {
 // 根据票价返回对应的样式
 const getPriceStyle = (label) => {
   // 检查标签是否包含票价信息
-  if (!label.includes("票价")) return {};
+  if (!label?.includes("票价")) return {};
 
   // 提取票价数值
   const priceMatch = label.match(/票价(\d+)元/);
