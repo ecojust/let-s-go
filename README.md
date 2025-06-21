@@ -1,7 +1,12 @@
+<p align="center" style="font-size:32px;font-weight:900">12306余票查询工具</p>
+
 <p align="center">
   <img width="220px" height="220px" src="preview/logo.png" />
 </p>
-<p align="center">12306余票查询工具</p>
+
+<p align="center">
+  <img width="180px" height="180px" src="preview/wx.png" />
+</p>
 
 ## 📝 项目介绍
 

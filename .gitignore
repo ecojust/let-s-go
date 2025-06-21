@@ -2,3 +2,4 @@ dist/
 node_modules/
 src-tauri/debug/
 src-tauri/release/
+src-tauri/target/
